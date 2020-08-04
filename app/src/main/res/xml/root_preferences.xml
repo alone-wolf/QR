@@ -1,0 +1,40 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory app:title="Normal">
+        <SwitchPreferenceCompat
+            app:key="setting_start_scan_on_start"
+            app:title="启动app即开始扫码"
+            app:defaultValue="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="About">
+        <Preference
+            android:key="setting_about_me_github"
+            android:title="我的GitHub主页"
+            android:summary="https://github.com/alone-wolf">
+        </Preference>
+        <Preference
+            android:key="setting_about_me_coolapk"
+            android:title="CoolApk：XX人来电"
+            android:summary="http://www.coolapk.com/u/445310">
+        </Preference>
+        <Preference
+            android:key="setting_about_goto_app_coolapk"
+            android:title="CoolApk：QR"
+            android:summary="https://www.coolapk.com/apk/com.wh.qr">
+        </Preference>
+<!--        <SwitchPreferenceCompat-->
+<!--            app:key="sync"-->
+<!--            app:title="Normal" />-->
+
+<!--        <SwitchPreferenceCompat-->
+<!--            app:dependency="sync"-->
+<!--            app:key="attachment"-->
+<!--            app:summaryOff="@string/attachment_summary_off"-->
+<!--            app:summaryOn="@string/attachment_summary_on"-->
+<!--            app:title="About" />-->
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
