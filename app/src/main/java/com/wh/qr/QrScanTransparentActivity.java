@@ -91,7 +91,7 @@ public class QrScanTransparentActivity extends AppCompatActivity {
                 requireActivity().setResult(RequestCode_get_scan_result, intent);
                 requireActivity().finish();
             } else {
-                Toast.makeText(requireActivity(), result, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(requireActivity(), result, Toast.LENGTH_SHORT).show();
                 Matcher matcher = Singleton.getInstance().regex_pattern_is_url.matcher(result);
                 if (matcher.matches()) {
                     new AlertDialog.Builder(requireContext())
