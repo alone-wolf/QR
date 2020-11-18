@@ -2,20 +2,26 @@ package com.wh.qr;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class QrGenTransparentActivity extends AppCompatActivity {
+    private String TAG = "WH_" + getClass().getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,60 +29,65 @@ public class QrGenTransparentActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_buttom_sheet_gen);
 
         Intent intent = getIntent();
-        if(intent==null){
+        if (intent == null) {
             this.finish();
         }
         String action = intent.getAction();
-        if(action==null){
-            this.finish();
-        }
-        String type = intent.getType();
-        if(type==null){
+        Log.d(TAG, "onCreate: " + action);
+        if (action == null) {
             this.finish();
         }
 
         String s = null;
-
-        switch (action){
-            case Intent.ACTION_SEND:{
-                s = intent.getStringExtra(Intent.EXTRA_TEXT);
-                break;
-            }
-            case Intent.ACTION_PROCESS_TEXT:{
-                s = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
-                break;
-            }
+        if (Intent.ACTION_SEND.equals(action)) {
+            s = intent.getStringExtra(Intent.EXTRA_TEXT);
         }
-        if(s==null){
-            this.finish();
+        if (Intent.ACTION_PROCESS_TEXT.equals(action)) {
+            s = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+        }
+        if (s != null) {
+            BottomSheet bottomSheet = BottomSheet.getInstance(s);
+            bottomSheet.show(getSupportFragmentManager(), bottomSheet.getTag());
+            return;
         }
 
-        BottomSheet bottomSheet = BottomSheet.getInstance(s);
-        bottomSheet.show(getSupportFragmentManager(),bottomSheet.getTag());
+        final int[] press_which = {-1000};
 
+        EditText editText = new EditText(this);
+        new AlertDialog.Builder(this)
+                .setTitle("Input Text For Generation")
+                .setView(editText)
+                .setPositiveButton("Gen", (dialog, which) -> {
+                    press_which[0] = which;
+                    BottomSheet bottomSheet = BottomSheet.getInstance(editText.getText().toString());
+                    bottomSheet.show(getSupportFragmentManager(), bottomSheet.getTag());
+                })
+                .setNegativeButton("Close", (dialog, which) -> {
+                    press_which[0] = which;
+                    finish();
+                })
+                .setOnDismissListener(dialog -> {
+                    if (press_which[0] == -1000) {
+                        finish();
+                    }
+                })
+                .create()
+                .show();
     }
 
     public static class BottomSheet extends BottomSheetDialogFragment {
         private String s;
         private ImageView iv_qr_code;
-        private Context mParent;
-        private String TAG = "WH_"+getClass().getSimpleName();
+        private String TAG = "WH_" + getClass().getSimpleName();
 
-        public BottomSheet() {}
-        public BottomSheet(String s){
+        public BottomSheet(String s) {
             this.s = s;
-        }
-
-        @Override
-        public void onAttach(@NonNull Context context) {
-            super.onAttach(context);
-            mParent = context;
         }
 
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_buttom_sheet_gen,container,false);
+            return inflater.inflate(R.layout.fragment_buttom_sheet_gen, container, false);
         }
 
         @Override
@@ -90,10 +101,10 @@ public class QrGenTransparentActivity extends AppCompatActivity {
         public void onActivityCreated(@Nullable Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
             Log.d(TAG, "onActivityCreated: ");
-            if(s==null){
+            if (s == null) {
                 requireActivity().finish();
             }
-            iv_qr_code.setImageBitmap(new QRCodeGenerator(s,500,500).getQRCode());
+            iv_qr_code.setImageBitmap(new QRCodeGenerator(s, 500, 500).getQRCode());
         }
 
         @Override
@@ -102,7 +113,7 @@ public class QrGenTransparentActivity extends AppCompatActivity {
             requireActivity().finish();
         }
 
-        public static BottomSheet getInstance(String s){
+        public static BottomSheet getInstance(String s) {
             return new BottomSheet(s);
         }
     }

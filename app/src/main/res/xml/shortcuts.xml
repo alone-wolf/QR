@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shortcuts xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <shortcut android:shortcutId="toggle"
-        android:icon="@mipmap/ic_launcher"
+    <shortcut android:shortcutId="scan"
+        android:icon="@drawable/ic_baseline_qr_code_scanner_24"
         android:shortcutShortLabel="@string/shortcut_scan_qr_label">
         <intent android:action="android.intent.action.MAIN"
             android:targetPackage="com.wh.qr"
             android:targetClass="com.wh.qr.QrScanTransparentActivity" />
     </shortcut>
-    <!--    <shortcut android:shortcutId="scan"-->
-    <!--        android:icon="@mipmap/ic_launcher_round"-->
-    <!--        android:shortcutShortLabel="@string/short_cuts_stop_server"-->
-    <!--        android:shortcutLongLabel="@string/short_cuts_stop_server"-->
-    <!--        tools:targetApi="n_mr1">-->
-    <!--        <intent android:action="android.intent.action.MAIN"-->
-    <!--            android:targetPackage="com.wh.mybaxe"-->
-    <!--            android:targetClass="com.wh.mybaxe.QuickToggleShortcut" />-->
-    <!--    </shortcut>-->
+    <shortcut android:shortcutId="gen"
+        android:icon="@drawable/ic_baseline_qr_code_24"
+        android:shortcutShortLabel="@string/shortcut_gen_qr_label">
+        <intent android:action="android.intent.action.MAIN"
+            android:targetPackage="com.wh.qr"
+            android:targetClass="com.wh.qr.QrGenTransparentActivity" />
+    </shortcut>
 </shortcuts>

@@ -18,4 +18,5 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
     <string name="shortcut_scan_qr_label">QRCodeScan</string>
+    <string name="shortcut_gen_qr_label">QRCodeGenerate</string>
 </resources>
