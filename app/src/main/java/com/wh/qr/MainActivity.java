@@ -57,13 +57,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(this);
-        floatingActionButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                MainActivity.this.startActivity(new Intent(MainActivity.this,QrScanTransparentActivity.class));
-                return true;
-            }
-        });
 
         if (sharedPreferences_default.getBoolean("setting_start_scan_on_start", false)) {
             startScan();
@@ -79,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (requestCode) {
             case RequestCode_get_scan_result: {
                 if (data != null) {
-                    String d = data.getStringExtra("result");
+                    String d = data.getStringExtra("qr_scan_result");
                     tv_qr_code_result.setText(d);
 
                     SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -97,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, RequestCode_get_permission_camera);
             }
         } else {
-            Intent intent = new Intent(this, QRCodeScanActivity.class);
+            Intent intent = new Intent(this, QrScanTransparentActivity.class);
             intent.putExtra("forResult", "1");
             startActivityForResult(intent, RequestCode_get_scan_result);
         }
