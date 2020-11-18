@@ -57,6 +57,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(this);
+        floatingActionButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                MainActivity.this.startActivity(new Intent(MainActivity.this,QrScanTransparentActivity.class));
+                return true;
+            }
+        });
 
         if (sharedPreferences_default.getBoolean("setting_start_scan_on_start", false)) {
             startScan();
