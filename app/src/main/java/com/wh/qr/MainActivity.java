@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private String TAG = "WH_" + getClass().getSimpleName();
     private TextView tv_qr_code_result;
-    private Pattern pattern;
 
     private static final int RequestCode_get_scan_result = 436;
     private static final int RequestCode_get_permission_camera = 144;
@@ -50,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sharedPreferences = getSharedPreferences(spf, MODE_PRIVATE);
         SharedPreferences sharedPreferences_default = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String isAddress = "^(https?://)?(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)";
-        pattern = Pattern.compile(isAddress);
         tv_qr_code_result = findViewById(R.id.tv_qr_code_result);
         tv_qr_code_result.setOnClickListener(this);
 
@@ -101,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             case R.id.tv_qr_code_result: {
                 String result = String.valueOf(tv_qr_code_result.getText());
-                Matcher matcher = pattern.matcher(result);
+                Matcher matcher = Singleton.getInstance().regex_pattern_is_url.matcher(result);
                 if (matcher.matches()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this)
                             .setTitle("使用浏览器打开")
