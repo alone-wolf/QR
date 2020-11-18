@@ -15,12 +15,12 @@ import android.widget.ImageView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-public class TransparentActivity extends AppCompatActivity {
+public class QrGenTransparentActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_buttom_sheet);
+        setContentView(R.layout.fragment_buttom_sheet_gen);
 
         Intent intent = getIntent();
         if(intent==null){
@@ -76,7 +76,7 @@ public class TransparentActivity extends AppCompatActivity {
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_buttom_sheet,container,false);
+            return inflater.inflate(R.layout.fragment_buttom_sheet_gen,container,false);
         }
 
         @Override
