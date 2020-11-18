@@ -27,7 +27,24 @@ public class QRCodeStageActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageView);
 
         Intent intent = getIntent();
-        final String qrstring = intent.getStringExtra("qrcodestring");
+        String qrstring = intent.getStringExtra("qrcodestring");
+
+        if(qrstring==null){
+            String action = intent.getAction()+"";
+            String type = intent.getType()+"";
+            if("text/plain".equals(type)){
+                switch (action){
+                    case Intent.ACTION_SEND:{
+                        qrstring = intent.getStringExtra(Intent.EXTRA_TEXT) + "";
+                        break;
+                    }
+                    case Intent.ACTION_PROCESS_TEXT:{
+                        qrstring= intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) + "";
+                        break;
+                    }
+                }
+            }
+        }
 
         if (qrstring != null) {
             textView.setText(qrstring);
@@ -35,11 +52,12 @@ public class QRCodeStageActivity extends AppCompatActivity {
             imageView.setImageBitmap(new QRCodeGenerator(qrstring, 300, 300).getQRCode());
         }
 
+        String finalQrstring = qrstring;
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData mClipData = ClipData.newPlainText("qrcodestring", qrstring);
+                ClipData mClipData = ClipData.newPlainText("qrcodestring", finalQrstring);
                 clipboardManager.setPrimaryClip(mClipData);
                 Toast.makeText(QRCodeStageActivity.this, "copied", Toast.LENGTH_LONG).show();
             }

@@ -28,7 +28,26 @@
             </intent-filter>
         </activity>
         <activity android:name=".QRCodeScanActivity" />
-        <activity android:name=".QRCodeStageActivity" />
+        <activity android:name=".QRCodeStageActivity" >
+            <intent-filter>
+
+                <!-- 接收分享的文本 -->
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+
+                <!-- 添加点选文本弹出框项目 -->
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
