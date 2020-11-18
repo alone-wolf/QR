@@ -21,7 +21,7 @@ public class QRCodeStageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_qrcode_stage);
+//        setContentView(R.layout.activity_qrcode_stage);
 
         textView = findViewById(R.id.textView);
         imageView = findViewById(R.id.imageView);

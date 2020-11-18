@@ -13,22 +13,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".QRCodeScanActivity" />
-        <activity android:name=".QRCodeStageActivity" >
+        <activity android:name=".TransparentActivity" android:theme="@style/RecvTheme" android:label="toQRCode">
             <intent-filter>
 
                 <!-- 接收分享的文本 -->
@@ -47,6 +32,41 @@
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".QRCodeScanActivity" />
+        <activity android:name=".QRCodeStageActivity">
+<!--            <intent-filter>-->
+
+<!--                &lt;!&ndash; 接收分享的文本 &ndash;&gt;-->
+<!--                <action android:name="android.intent.action.SEND" />-->
+
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+
+<!--                <data android:mimeType="text/plain" />-->
+<!--            </intent-filter>-->
+<!--            <intent-filter>-->
+
+<!--                &lt;!&ndash; 添加点选文本弹出框项目 &ndash;&gt;-->
+<!--                <action android:name="android.intent.action.PROCESS_TEXT" />-->
+
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+
+<!--                <data android:mimeType="text/plain" />-->
+<!--            </intent-filter>-->
         </activity>
     </application>
 
