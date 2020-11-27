@@ -10,6 +10,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -90,60 +91,110 @@ public class QrScanTransparentActivity extends AppCompatActivity {
                 intent.putExtra("qr_scan_result", result);
                 requireActivity().setResult(RequestCode_get_scan_result, intent);
                 requireActivity().finish();
-            } else {
-//                Toast.makeText(requireActivity(), result, Toast.LENGTH_SHORT).show();
-                Matcher matcher = Singleton.getInstance().regex_pattern_is_url.matcher(result);
-                if (matcher.matches()) {
-                    new AlertDialog.Builder(requireContext())
-                            .setTitle("Open URL?")
-                            .setMessage(result)
-                            .setPositiveButton("ok", (dialog, which) -> {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(result)));
-                                requireActivity().finish();
-                            })
-                            .setNeutralButton("share", (dialog, which) -> {
-                                Intent sendIntent = new Intent();
-                                sendIntent.setAction(Intent.ACTION_SEND);
-                                sendIntent.putExtra(Intent.EXTRA_TEXT, result);
-                                sendIntent.setType("text/plain");
+                return;
+            }
+            if (Singleton.getInstance().regex_pattern_is_url.matcher(result).matches()) {
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Open URL?")
+                        .setMessage(result)
+                        .setPositiveButton("ok", (dialog, which) -> {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(result)));
+                            requireActivity().finish();
+                        })
+                        .setNeutralButton("share", (dialog, which) -> {
+                            Intent sendIntent = new Intent();
+                            sendIntent.setAction(Intent.ACTION_SEND);
+                            sendIntent.putExtra(Intent.EXTRA_TEXT, result);
+                            sendIntent.setType("text/plain");
 
-                                Intent shareIntent = Intent.createChooser(sendIntent, "Share URL");
-                                startActivity(shareIntent);
-                                requireActivity().finish();
-
-                            })
-                            .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
-                            .create()
-                            .show();
-                } else {
-                    new AlertDialog.Builder(requireContext())
-                            .setTitle("Operations?")
-                            .setMessage(result)
-                            .setPositiveButton("copy", (dialog, which) -> {
-                                ClipboardManager clipboardManager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                                ClipData mClipData = ClipData.newPlainText("scanResult", result);
-                                clipboardManager.setPrimaryClip(mClipData);
-                                requireActivity().finish();
-                            })
-                            .setNeutralButton("share", (dialog, which) -> {
-                                Intent sendIntent = new Intent();
-                                sendIntent.setAction(Intent.ACTION_SEND);
-                                sendIntent.putExtra(Intent.EXTRA_TEXT, result);
-                                sendIntent.setType("text/plain");
-
-                                Intent shareIntent = Intent.createChooser(sendIntent, "Share QRCode Content");
-                                startActivity(shareIntent);
-                                requireActivity().finish();
-
-                            })
-                            .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
-                            .create()
-                            .show();
-                }
-
+                            Intent shareIntent = Intent.createChooser(sendIntent, "Share URL");
+                            startActivity(shareIntent);
+                            requireActivity().finish();
+                        })
+                        .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
+                        .create()
+                        .show();
             }
 
+            if (result.startsWith("geo:") || result.startsWith("GEO:")) {
+                String result_tmp = result.substring(4);
+                String[] position = result_tmp.split(",");
+                if (position.length != 2 && position.length != 3) {
+                    requireActivity().finish();
+                    return;
+                }
+                String latitude = position[0];
+                String longitude = position[1];
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Operation for position?")
+                        .setMessage(position[0] + " " + position[1])
+                        .setOnDismissListener(dialog -> requireActivity().finish())
+                        .setNeutralButton("Share", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent sendIntent = new Intent();
+                                sendIntent.setAction(Intent.ACTION_SEND);
+                                sendIntent.putExtra(Intent.EXTRA_TEXT, result);
+                                sendIntent.setType("text/plain");
 
+                                Intent shareIntent = Intent.createChooser(sendIntent, "Share Position");
+                                startActivity(shareIntent);
+                                requireActivity().finish();
+                            }
+                        })
+                        .setPositiveButton("Open", (dialog, which) -> {
+                            PackageManager manager = requireContext().getPackageManager();
+                            Intent intent_to_map;
+                            intent_to_map = manager.getLaunchIntentForPackage("com.tencent.map");
+                            if (intent_to_map != null) {
+                                Intent intent1 = new Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse(
+                                                new UrlBuilder()
+                                                        .setBaseUrl("qqmap://map")
+                                                        .addPath("routeplan")
+                                                        .addFirstArg("type", "drive")
+                                                        .addMoreArg("fromcoord", "CurrentLocation")
+                                                        .addMoreArg("tocoord", latitude + "," + longitude)
+                                                        .addMoreArg("refer", "7FMBZ-43FWW-B2DRX-OV7TJ-GXRVZ-A3BIP")
+                                                        .getString(TAG)));
+                                startActivity(intent1);
+                                requireActivity().finish();
+                                return;
+                            }
+
+                            new AlertDialog.Builder(requireContext())
+                                    .setTitle("Please install tencent map!")
+                                    .setMessage("amap baidumap are poor!!!!")
+                                    .setOnDismissListener(dialog1 -> requireActivity().finish()).create().show();
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> requireActivity().finish())
+                        .create()
+                        .show();
+            } else {
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Operations?")
+                        .setMessage(result)
+                        .setPositiveButton("copy", (dialog, which) -> {
+                            ClipboardManager clipboardManager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                            ClipData mClipData = ClipData.newPlainText("scanResult", result);
+                            clipboardManager.setPrimaryClip(mClipData);
+                            requireActivity().finish();
+                        })
+                        .setNeutralButton("share", (dialog, which) -> {
+                            Intent sendIntent = new Intent();
+                            sendIntent.setAction(Intent.ACTION_SEND);
+                            sendIntent.putExtra(Intent.EXTRA_TEXT, result);
+                            sendIntent.setType("text/plain");
+
+                            Intent shareIntent = Intent.createChooser(sendIntent, "Share QRCode Content");
+                            startActivity(shareIntent);
+                            requireActivity().finish();
+                        })
+                        .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
+                        .create()
+                        .show();
+            }
         }
 
         @Override
