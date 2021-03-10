@@ -17,8 +17,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import java.util.Arrays;
 
 import cn.bingoogolapple.qrcode.core.QRCodeView;
 
@@ -89,105 +92,88 @@ public class QrScanTransparentActivity extends AppCompatActivity {
                 requireActivity().finish();
                 return;
             }
-//            if (RegexUtils.getInstance().regex_pattern_is_url.matcher(result).matches()) {
-//                new AlertDialog.Builder(requireContext())
-//                        .setTitle("Open URL?")
-//                        .setMessage(result)
-//                        .setPositiveButton("ok", (dialog, which) -> {
-//                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(result)));
-//                            requireActivity().finish();
-//                        })
-//                        .setNeutralButton("share", (dialog, which) -> {
-//                            Intent sendIntent = new Intent();
-//                            sendIntent.setAction(Intent.ACTION_SEND);
-//                            sendIntent.putExtra(Intent.EXTRA_TEXT, result);
-//                            sendIntent.setType("text/plain");
-//
-//                            Intent shareIntent = Intent.createChooser(sendIntent, "Share URL");
-//                            startActivity(shareIntent);
-//                            requireActivity().finish();
-//                        })
-//                        .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
-//                        .create()
-//                        .show();
-//            }
-
-            if (result.startsWith("geo:") || result.startsWith("GEO:")) {
-                String result_tmp = result.substring(4);
-                String[] position = result_tmp.split(",");
-                if (position.length != 2 && position.length != 3) {
-                    requireActivity().finish();
-                    return;
-                }
-                String latitude = position[0];
-                String longitude = position[1];
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Operation for position?")
-                        .setMessage(position[0] + " " + position[1])
-                        .setOnDismissListener(dialog -> requireActivity().finish())
-                        .setNeutralButton("Share", new DialogInterface.OnClickListener() {
+            String a = RegexUtils.matchTel1(result);
+            if (a != null) {
+                // 拨号
+                String finalA = a;
+                new AlertDialog
+                        .Builder(requireContext())
+                        .setTitle("提示")
+                        .setMessage("要打开拨号器吗？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Intent sendIntent = new Intent();
-                                sendIntent.setAction(Intent.ACTION_SEND);
-                                sendIntent.putExtra(Intent.EXTRA_TEXT, result);
-                                sendIntent.setType("text/plain");
-
-                                Intent shareIntent = Intent.createChooser(sendIntent, "Share Position");
-                                startActivity(shareIntent);
-                                requireActivity().finish();
+                                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(finalA));
+                                startActivity(intent);
                             }
                         })
-                        .setPositiveButton("Open", (dialog, which) -> {
-                            PackageManager manager = requireContext().getPackageManager();
-                            Intent intent_to_map;
-                            intent_to_map = manager.getLaunchIntentForPackage("com.tencent.map");
-                            if (intent_to_map != null) {
-                                Intent intent1 = new Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse(
-                                                new UrlBuilder()
-                                                        .setBaseUrl("qqmap://map")
-                                                        .addPath("routeplan")
-                                                        .addFirstArg("type", "drive")
-                                                        .addMoreArg("fromcoord", "CurrentLocation")
-                                                        .addMoreArg("tocoord", latitude + "," + longitude)
-                                                        .addMoreArg("refer", "7FMBZ-43FWW-B2DRX-OV7TJ-GXRVZ-A3BIP")
-                                                        .getString(TAG)));
-                                startActivity(intent1);
-                                requireActivity().finish();
-                                return;
-                            }
-
-                            new AlertDialog.Builder(requireContext())
-                                    .setTitle("Please install tencent map!")
-                                    .setMessage("amap baidumap are poor!!!!")
-                                    .setOnDismissListener(dialog1 -> requireActivity().finish()).create().show();
-                        })
-                        .setNegativeButton("Cancel", (dialog, which) -> requireActivity().finish())
+                        .setNegativeButton("取消", null)
                         .create()
                         .show();
-            } else {
+                return;
+            }
+            a = RegexUtils.matchUrl(result);
+            if (a != null) {
+                // 打开网页
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
+                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    new AlertDialog
+                            .Builder(requireContext())
+                            .setTitle("提示")
+                            .setMessage("要打开链接吗？\n" + a)
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    startActivity(intent);
+                                }
+                            })
+                            .setNegativeButton("取消", null)
+                            .create()
+                            .show();
+                } else {
+                    Toast.makeText(requireActivity(), "未找到浏览器", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+            a = RegexUtils.matchGeo1(result);
+            if (a != null) {
+                // 打开地图
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
+                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("提示")
+                            .setMessage("要打开地图吗？")
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    startActivity(intent);
+                                }
+                            })
+                            .setNegativeButton("取消", null)
+                            .create()
+                            .show();
+                } else {
+                    Toast.makeText(requireActivity(), "未找到地图软件", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+            String[] as = RegexUtils.matchSendSms(result);
+            Log.d(TAG, "onActivityResult: "+ Arrays.toString(as));
+            if (as != null && as.length == 3) {
+                // 发送短信
+                Log.d(TAG, "onClick: " + Arrays.toString(as));
+                Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("sms:" + as[1]));
+                intent.putExtra("sms_body", as[2]);
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Operations?")
-                        .setMessage(result)
-                        .setPositiveButton("copy", (dialog, which) -> {
-                            ClipboardManager clipboardManager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                            ClipData mClipData = ClipData.newPlainText("scanResult", result);
-                            clipboardManager.setPrimaryClip(mClipData);
-                            requireActivity().finish();
+                        .setTitle("提示")
+                        .setMessage("要打开短信吗？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(intent);
+                            }
                         })
-                        .setNeutralButton("share", (dialog, which) -> {
-                            Intent sendIntent = new Intent();
-                            sendIntent.setAction(Intent.ACTION_SEND);
-                            sendIntent.putExtra(Intent.EXTRA_TEXT, result);
-                            sendIntent.setType("text/plain");
-
-                            Intent shareIntent = Intent.createChooser(sendIntent, "Share QRCode Content");
-                            startActivity(shareIntent);
-                            requireActivity().finish();
-                        })
-                        .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
+                        .setNegativeButton("取消", null)
                         .create()
                         .show();
             }

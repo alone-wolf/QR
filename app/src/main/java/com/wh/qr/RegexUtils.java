@@ -53,7 +53,7 @@ public class RegexUtils {
 //        return null;
 //    }
     public static String[] matchTel(String text){
-        Pattern pattern = Pattern.compile("^((i?)tel):(.+)");
+        Pattern pattern = Pattern.compile("^(tel|TEL):(.+)");
         Matcher matcher = pattern.matcher(text);
         if(matcher.find()){
             String[] strings = new String[matcher.groupCount()];
@@ -65,7 +65,7 @@ public class RegexUtils {
         return null;
     }
     public static String matchTel1(String text){
-        Pattern pattern = Pattern.compile("^((i?)tel):(.+)");
+        Pattern pattern = Pattern.compile("^(tel|TEL):(.+)");
         Matcher matcher = pattern.matcher(text);
         if(matcher.find()){
             return matcher.group();
@@ -74,7 +74,7 @@ public class RegexUtils {
     }
 
     public static String[] matchSendSms(String text){
-        Pattern pattern = Pattern.compile("^((i?)smsto):(.+?):(.+)");
+        Pattern pattern = Pattern.compile("^(smsto|SMSTO):(.+?):(.+)");
         Matcher matcher = pattern.matcher(text);
         if(matcher.find()){
             String[] strings = new String[matcher.groupCount()];
@@ -87,7 +87,7 @@ public class RegexUtils {
     }
 
     public static String[] matchGeo(String text){
-        Pattern pattern = Pattern.compile("^((i?)geo):(.+?),(.+)");
+        Pattern pattern = Pattern.compile("^(geo|GEO):(.+?),(.+)");
         Matcher matcher = pattern.matcher(text);
         if(matcher.find()){
             String[] strings = new String[matcher.groupCount()];
@@ -99,7 +99,7 @@ public class RegexUtils {
         return null;
     }
     public static String matchGeo1(String text){
-        Pattern pattern = Pattern.compile("^((i?)geo):(.+?),(.+)");
+        Pattern pattern = Pattern.compile("^(geo|GEO):(.+?),(.+)");
         Matcher matcher = pattern.matcher(text);
         if(matcher.find()){
             return matcher.group();
