@@ -23,20 +23,26 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.permissionx.guolindev.PermissionX;
+import com.permissionx.guolindev.callback.ExplainReasonCallback;
+import com.permissionx.guolindev.callback.RequestCallback;
+import com.permissionx.guolindev.request.ExplainScope;
 
+import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
     private String TAG = "WH_" + getClass().getSimpleName();
     private TextView tv_qr_code_result;
 
     private static final int RequestCode_get_scan_result = 436;
-    private static final int RequestCode_get_permission_camera = 144;
 
     private static final String spf = "spf";
     private SharedPreferences sharedPreferences;
@@ -54,11 +60,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(this);
+        floatingActionButton.setOnLongClickListener(this);
+        floatingActionButton.setVisibility(View.GONE);
+
+        PermissionX.init(this)
+                .permissions(Manifest.permission.CAMERA)
+                .onExplainRequestReason((scope, deniedList) -> {
+                    String s = "QR need permission of Camera to function normally";
+                    scope.showRequestReasonDialog(deniedList, s, "OK", "Cancel");
+                }).request((allGranted, grantedList, deniedList) -> {
+            if (allGranted) {
+                floatingActionButton.setVisibility(View.VISIBLE);
+            }
+        });
 
         if (sharedPreferences_default.getBoolean("setting_start_scan_on_start", false)) {
             startScan();
-        }else {
-            tv_qr_code_result.setText(sharedPreferences.getString("last_scan_history","have no history"));
+        } else {
+            tv_qr_code_result.setText(sharedPreferences.getString("last_scan_history", "have no history"));
         }
     }
 
@@ -82,15 +101,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void startScan() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA}, RequestCode_get_permission_camera);
-            }
-        } else {
-            Intent intent = new Intent(this, QrScanTransparentActivity.class);
-            intent.putExtra("forResult", "1");
-            startActivityForResult(intent, RequestCode_get_scan_result);
-        }
+        Intent intent = new Intent(this, QrScanTransparentActivity.class);
+        intent.putExtra("forResult", "1");
+        startActivityForResult(intent, RequestCode_get_scan_result);
     }
 
     @Override
@@ -116,13 +129,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     AlertDialog.Builder builder = new AlertDialog.Builder(this)
                             .setTitle("复制到剪切板吗")
                             .setMessage(result)
-                            .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                                    ClipData mClipData = ClipData.newPlainText("scanResult", result);
-                                    clipboardManager.setPrimaryClip(mClipData);
-                                }
+                            .setPositiveButton("ok", (dialogInterface, i) -> {
+                                ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                ClipData mClipData = ClipData.newPlainText("scanResult", result);
+                                clipboardManager.setPrimaryClip(mClipData);
                             })
                             .setNegativeButton("no", null);
                     builder.create().show();
@@ -156,16 +166,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case RequestCode_get_permission_camera: {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startScan();
-                }
-                break;
-            }
-        }
+    public boolean onLongClick(View v) {
+        EditText editText = new EditText(MainActivity.this);
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("输入文字")
+                .setView(editText)
+                .setPositiveButton("生成", (dialog, which) -> {
+                    String s = editText.getText().toString();
+                    if(s==null|| s.equals("")){
+                        Toast.makeText(MainActivity.this,"Input null",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Intent i = new Intent(MainActivity.this,QrGenTransparentActivity.class);
+                    i.setAction("gen_qr");
+                    i.putExtra("text",s);
+                    startActivity(i);
+                }).setNegativeButton("取消", null).create().show();
+        return true;
     }
-
 }

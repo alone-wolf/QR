@@ -28,6 +28,8 @@ android {
 }
 
 dependencies {
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation 'com.permissionx.guolindev:permissionx:1.4.0'
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'

@@ -43,7 +43,12 @@ public class QrGenTransparentActivity extends AppCompatActivity {
             s = intent.getStringExtra(Intent.EXTRA_TEXT);
         }
         if (Intent.ACTION_PROCESS_TEXT.equals(action)) {
-            s = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                s = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+            }
+        }
+        if("gen_qr".equals(action)){
+            s = intent.getStringExtra("text");
         }
         if (s != null) {
             BottomSheet bottomSheet = BottomSheet.getInstance(s);
