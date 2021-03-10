@@ -1,22 +1,19 @@
 package com.wh.qr;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -29,14 +26,10 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.permissionx.guolindev.PermissionX;
-import com.permissionx.guolindev.callback.ExplainReasonCallback;
-import com.permissionx.guolindev.callback.RequestCallback;
-import com.permissionx.guolindev.request.ExplainScope;
 
-import java.util.List;
-import java.util.prefs.Preferences;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
     private String TAG = "WH_" + getClass().getSimpleName();
@@ -106,36 +99,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivityForResult(intent, RequestCode_get_scan_result);
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_qr_code_result: {
                 String result = String.valueOf(tv_qr_code_result.getText());
-                Matcher matcher = Singleton.getInstance().regex_pattern_is_url.matcher(result);
-                if (matcher.matches()) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                            .setTitle("使用浏览器打开")
-                            .setMessage(result)
-                            .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(result));
-                                    startActivity(intent);
-                                }
-                            })
-                            .setNegativeButton("no", null);
-                    builder.create().show();
-                } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                            .setTitle("复制到剪切板吗")
-                            .setMessage(result)
-                            .setPositiveButton("ok", (dialogInterface, i) -> {
-                                ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                                ClipData mClipData = ClipData.newPlainText("scanResult", result);
-                                clipboardManager.setPrimaryClip(mClipData);
-                            })
-                            .setNegativeButton("no", null);
-                    builder.create().show();
+                String a = RegexUtils.matchTel1(result);
+                if (a != null) {
+                    // 拨号
+                    Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(a));
+                    startActivity(intent);
+                    return;
+                }
+                a = RegexUtils.matchUrl(result);
+                if (a != null) {
+                    // 打开网页
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(this, "未找到浏览器", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+                a = RegexUtils.matchGeo1(result);
+                if (a != null) {
+                    // 打开地图
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(this, "未找到地图软件", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+                String[] as = RegexUtils.matchSendSms(result);
+                if (as != null && as.length == 3) {
+                    // 发送短信
+                    Log.d(TAG, "onClick: " + Arrays.toString(as));
+                    Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("sms:" + as[1]));
+                    intent.putExtra("sms_body", as[2]);
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(this, "未找到短信软件", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
                 }
                 break;
             }
@@ -173,13 +183,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setView(editText)
                 .setPositiveButton("生成", (dialog, which) -> {
                     String s = editText.getText().toString();
-                    if(s==null|| s.equals("")){
-                        Toast.makeText(MainActivity.this,"Input null",Toast.LENGTH_SHORT).show();
+                    if (s == null || s.equals("")) {
+                        Toast.makeText(MainActivity.this, "Input null", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    Intent i = new Intent(MainActivity.this,QrGenTransparentActivity.class);
+                    Intent i = new Intent(MainActivity.this, QrGenTransparentActivity.class);
                     i.setAction("gen_qr");
-                    i.putExtra("text",s);
+                    i.putExtra("text", s);
                     startActivity(i);
                 }).setNegativeButton("取消", null).create().show();
         return true;

@@ -17,12 +17,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import cn.bingoogolapple.qrcode.core.QRCodeView;
 
@@ -81,8 +77,8 @@ public class QrScanTransparentActivity extends AppCompatActivity {
 
         @Override
         public void onScanQRCodeSuccess(String result) {
+            Log.d(TAG, "onScanQRCodeSuccess: "+result);
             qrCode.stopCamera();
-            Log.d(TAG, "onScanQRCodeSuccess: 1");
 
             Intent order_intent = requireActivity().getIntent();
             String for_result = order_intent.getStringExtra("forResult");
@@ -93,28 +89,28 @@ public class QrScanTransparentActivity extends AppCompatActivity {
                 requireActivity().finish();
                 return;
             }
-            if (Singleton.getInstance().regex_pattern_is_url.matcher(result).matches()) {
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Open URL?")
-                        .setMessage(result)
-                        .setPositiveButton("ok", (dialog, which) -> {
-                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(result)));
-                            requireActivity().finish();
-                        })
-                        .setNeutralButton("share", (dialog, which) -> {
-                            Intent sendIntent = new Intent();
-                            sendIntent.setAction(Intent.ACTION_SEND);
-                            sendIntent.putExtra(Intent.EXTRA_TEXT, result);
-                            sendIntent.setType("text/plain");
-
-                            Intent shareIntent = Intent.createChooser(sendIntent, "Share URL");
-                            startActivity(shareIntent);
-                            requireActivity().finish();
-                        })
-                        .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
-                        .create()
-                        .show();
-            }
+//            if (RegexUtils.getInstance().regex_pattern_is_url.matcher(result).matches()) {
+//                new AlertDialog.Builder(requireContext())
+//                        .setTitle("Open URL?")
+//                        .setMessage(result)
+//                        .setPositiveButton("ok", (dialog, which) -> {
+//                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(result)));
+//                            requireActivity().finish();
+//                        })
+//                        .setNeutralButton("share", (dialog, which) -> {
+//                            Intent sendIntent = new Intent();
+//                            sendIntent.setAction(Intent.ACTION_SEND);
+//                            sendIntent.putExtra(Intent.EXTRA_TEXT, result);
+//                            sendIntent.setType("text/plain");
+//
+//                            Intent shareIntent = Intent.createChooser(sendIntent, "Share URL");
+//                            startActivity(shareIntent);
+//                            requireActivity().finish();
+//                        })
+//                        .setNegativeButton("cancel", (dialog, which) -> requireActivity().finish())
+//                        .create()
+//                        .show();
+//            }
 
             if (result.startsWith("geo:") || result.startsWith("GEO:")) {
                 String result_tmp = result.substring(4);
