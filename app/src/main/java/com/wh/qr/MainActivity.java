@@ -1,6 +1,7 @@
 package com.wh.qr;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
@@ -14,7 +15,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -72,10 +76,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             tv_qr_code_result.setText(sharedPreferences.getString("last_scan_history", "have no history"));
         }
+
     }
 
 
-    @SuppressLint("QueryPermissionsNeeded")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -88,93 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     sharedPreferences.edit()
                             .putString("last_scan_history", result)
                             .apply();
-
-                    String a = RegexUtils.matchTel1(result);
-                    if (a != null) {
-                        // 拨号
-                        String finalA = a;
-                        new AlertDialog
-                                .Builder(this)
-                                .setTitle("提示")
-                                .setMessage("要打开拨号器吗？")
-                                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(finalA));
-                                        startActivity(intent);
-                                    }
-                                })
-                                .setNegativeButton("取消", null)
-                                .create()
-                                .show();
-                        return;
-                    }
-                    a = RegexUtils.matchUrl(result);
-                    if (a != null) {
-                        // 打开网页
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
-                        if (intent.resolveActivity(getPackageManager()) != null) {
-                            new AlertDialog
-                                    .Builder(this)
-                                    .setTitle("提示")
-                                    .setMessage("要打开链接吗？\n" + a)
-                                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            startActivity(intent);
-                                        }
-                                    })
-                                    .setNegativeButton("取消", null)
-                                    .create()
-                                    .show();
-                        } else {
-                            Toast.makeText(this, "未找到浏览器", Toast.LENGTH_SHORT).show();
-                        }
-                        return;
-                    }
-                    a = RegexUtils.matchGeo1(result);
-                    if (a != null) {
-                        // 打开地图
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
-                        if (intent.resolveActivity(getPackageManager()) != null) {
-                            new AlertDialog.Builder(this)
-                                    .setTitle("提示")
-                                    .setMessage("要打开地图吗？")
-                                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            startActivity(intent);
-                                        }
-                                    })
-                                    .setNegativeButton("取消", null)
-                                    .create()
-                                    .show();
-                        } else {
-                            Toast.makeText(this, "未找到地图软件", Toast.LENGTH_SHORT).show();
-                        }
-                        return;
-                    }
-                    String[] as = RegexUtils.matchSendSms(result);
-                    Log.d(TAG, "onActivityResult: "+ Arrays.toString(as));
-                    if (as != null && as.length == 3) {
-                        // 发送短信
-                        Log.d(TAG, "onClick: " + Arrays.toString(as));
-                        Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("sms:" + as[1]));
-                        intent.putExtra("sms_body", as[2]);
-                        new AlertDialog.Builder(this)
-                                .setTitle("提示")
-                                .setMessage("要打开短信吗？")
-                                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        startActivity(intent);
-                                    }
-                                })
-                                .setNegativeButton("取消", null)
-                                .create()
-                                .show();
-                        return;
-                    }
+                    RegexMatcher.Matcher(this, this, result, TAG);
                     break;
                 }
             }
@@ -187,54 +105,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivityForResult(intent, RequestCode_get_scan_result);
     }
 
-    @SuppressLint("QueryPermissionsNeeded")
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_qr_code_result: {
                 String result = String.valueOf(tv_qr_code_result.getText());
-                String a = RegexUtils.matchTel1(result);
-                if (a != null) {
-                    // 拨号
-                    Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(a));
-                    startActivity(intent);
-                    return;
-                }
-                a = RegexUtils.matchUrl(result);
-                if (a != null) {
-                    // 打开网页
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(this, "未找到浏览器", Toast.LENGTH_SHORT).show();
-                    }
-                    return;
-                }
-                a = RegexUtils.matchGeo1(result);
-                if (a != null) {
-                    // 打开地图
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(this, "未找到地图软件", Toast.LENGTH_SHORT).show();
-                    }
-                    return;
-                }
-                String[] as = RegexUtils.matchSendSms(result);
-                if (as != null && as.length == 3) {
-                    // 发送短信
-                    Log.d(TAG, "onClick: " + Arrays.toString(as));
-                    Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("sms:" + as[1]));
-                    intent.putExtra("sms_body", as[2]);
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(this, "未找到短信软件", Toast.LENGTH_SHORT).show();
-                    }
-                    return;
-                }
+                RegexMatcher.Matcher(this, this, result, TAG);
                 break;
             }
             case R.id.floatingActionButton: {
@@ -279,7 +155,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     i.setAction("gen_qr");
                     i.putExtra("text", s);
                     startActivity(i);
-                }).setNegativeButton("取消", null).create().show();
+                })
+                .setNegativeButton("取消", null)
+                .create()
+                .show();
         return true;
     }
 }

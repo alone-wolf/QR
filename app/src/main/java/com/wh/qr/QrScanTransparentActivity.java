@@ -30,7 +30,6 @@ public class QrScanTransparentActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         BottomSheet.getInstance().show(getSupportFragmentManager(), null);
     }
 
@@ -92,91 +91,7 @@ public class QrScanTransparentActivity extends AppCompatActivity {
                 requireActivity().finish();
                 return;
             }
-            String a = RegexUtils.matchTel1(result);
-            if (a != null) {
-                // 拨号
-                String finalA = a;
-                new AlertDialog
-                        .Builder(requireContext())
-                        .setTitle("提示")
-                        .setMessage("要打开拨号器吗？")
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(finalA));
-                                startActivity(intent);
-                            }
-                        })
-                        .setNegativeButton("取消", null)
-                        .create()
-                        .show();
-                return;
-            }
-            a = RegexUtils.matchUrl(result);
-            if (a != null) {
-                // 打开网页
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
-                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
-                    new AlertDialog
-                            .Builder(requireContext())
-                            .setTitle("提示")
-                            .setMessage("要打开链接吗？\n" + a)
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    startActivity(intent);
-                                }
-                            })
-                            .setNegativeButton("取消", null)
-                            .create()
-                            .show();
-                } else {
-                    Toast.makeText(requireActivity(), "未找到浏览器", Toast.LENGTH_SHORT).show();
-                }
-                return;
-            }
-            a = RegexUtils.matchGeo1(result);
-            if (a != null) {
-                // 打开地图
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(a));
-                if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
-                    new AlertDialog.Builder(requireContext())
-                            .setTitle("提示")
-                            .setMessage("要打开地图吗？")
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    startActivity(intent);
-                                }
-                            })
-                            .setNegativeButton("取消", null)
-                            .create()
-                            .show();
-                } else {
-                    Toast.makeText(requireActivity(), "未找到地图软件", Toast.LENGTH_SHORT).show();
-                }
-                return;
-            }
-            String[] as = RegexUtils.matchSendSms(result);
-            Log.d(TAG, "onActivityResult: "+ Arrays.toString(as));
-            if (as != null && as.length == 3) {
-                // 发送短信
-                Log.d(TAG, "onClick: " + Arrays.toString(as));
-                Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("sms:" + as[1]));
-                intent.putExtra("sms_body", as[2]);
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("提示")
-                        .setMessage("要打开短信吗？")
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                startActivity(intent);
-                            }
-                        })
-                        .setNegativeButton("取消", null)
-                        .create()
-                        .show();
-            }
+            RegexMatcher.Matcher(requireActivity(),requireContext(),result,TAG);
         }
 
         @Override
