@@ -71,10 +71,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        tv_qr_code_result.setText(sharedPreferences.getString("last_scan_history", "have no history"));
+
         if (sharedPreferences_default.getBoolean("setting_start_scan_on_start", false)) {
             startScan();
-        } else {
-            tv_qr_code_result.setText(sharedPreferences.getString("last_scan_history", "have no history"));
         }
 
     }
@@ -128,15 +128,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.m_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-            default:
-                return true;
+        if (item.getItemId() == R.id.m_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         }
+        return true;
     }
 
     @Override
@@ -147,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setView(editText)
                 .setPositiveButton("生成", (dialog, which) -> {
                     String s = editText.getText().toString();
-                    if (s == null || s.equals("")) {
+                    if (s.equals("")) {
                         Toast.makeText(MainActivity.this, "Input null", Toast.LENGTH_SHORT).show();
                         return;
                     }
