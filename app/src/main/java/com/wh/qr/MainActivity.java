@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -140,10 +141,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onLongClick(View v) {
-        EditText editText = new EditText(MainActivity.this);
+        @SuppressLint("InflateParams")
+        View vv = LayoutInflater.from(this).inflate(R.layout.item_input,null,false);
+        EditText editText = vv.findViewById(R.id.et_i);
         new AlertDialog.Builder(MainActivity.this)
                 .setTitle("输入文字")
-                .setView(editText)
+                .setView(vv)
                 .setPositiveButton("生成", (dialog, which) -> {
                     String s = editText.getText().toString();
                     if (s.equals("")) {

@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,10 +59,12 @@ public class QrGenTransparentActivity extends AppCompatActivity {
 
         final int[] press_which = {-1000};
 
-        EditText editText = new EditText(this);
+        @SuppressLint("InflateParams")
+        View vv = LayoutInflater.from(this).inflate(R.layout.item_input,null,false);
+        EditText editText = vv.findViewById(R.id.et_i);
         new AlertDialog.Builder(this)
                 .setTitle("Input Text For Generation")
-                .setView(editText)
+                .setView(vv)
                 .setPositiveButton("Gen", (dialog, which) -> {
                     press_which[0] = which;
                     BottomSheet bottomSheet = BottomSheet.getInstance(editText.getText().toString());
